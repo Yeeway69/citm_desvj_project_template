@@ -8,9 +8,34 @@
 #include "PugiXml\src\pugixml.hpp"
 
 // L05: TODO 1: Create a struct needed to hold the information to Map node
+ struct MapData
+ {
+    int width;
+    int height;
+    int tileWidth;
+    int tileHeight;
+    List<TileSet*> tilesets;
+    /* data */
+ };
  
+
 // L05: TODO 2: Create a struct to hold information for a TileSet
 // Ignore Terrain Types and Tile Types for now, but we want the image!
+struct TileSet
+{
+    int firstgid;
+    SString name;
+    int tileWidth;
+    int tileHeight;
+    int spacing;
+    int margin;
+    int tilecount;
+    int columns;
+    SDL_Texture* texture;
+    /* data */
+};
+
+
 
 class Map : public Module
 {
@@ -42,6 +67,7 @@ public:
 
 private:
     // L05: TODO 1: Declare a variable data of the struct MapData
+    MapData mapData;
     bool mapLoaded;
 };
 

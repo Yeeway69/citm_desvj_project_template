@@ -58,6 +58,7 @@ bool Map::CleanUp()
 
     // L05: TODO 2: Make sure you clean up any memory allocated from tilesets/map
 
+
     return true;
 }
 
@@ -70,34 +71,76 @@ bool Map::Load(SString mapFileName)
     // L05: TODO 3: Implement LoadMap to load the map properties
     // retrieve the paremeters of the <map> node and save it into map data
 
-    //Fill mapData variable
+    pugi::xml_parse_result result = mapFileXML.load_file(mapFileName.GetString());
+    if(result != NULL)
+    {
+
+    
+    //Fill mapData variabl
+    mapData.width = mapFileXML.child("map").attribute("width").as_int();
+    mapData.height = mapFileXML.child("map").attribute("height").as_int();
+    mapData.tileWidth = mapFileXML.child("map").attribute("tilewidth").as_int();
+    mapData.tileHeight = mapFileXML.child("map").attribute("tileheight").as_int();
          
     // L05: TODO 4: Implement the LoadTileSet function to load the tileset properties
     //ret = false; // Remove this line when implementing the function
+    
 
     //Iterate the Tileset
+     for(pugi::xml_node tilesetNode = mapFileXML.child("map").child("tileset"); tilesetNode != NULL; tilesetNode = tilesetNode.next_sibling("tileset"))
+     {
+        TileSet* tileset = new TileSet();
+        //Load Tileset attributes
+        tileset->firstgid = tilesetNode.attribute("firstgid").as_int();
+        tileset->name = tilesetNode.attribute("name").as_string();
+        tileset->tileWidth = tilesetNode.attribute("tilewidth").as_int();
+        tileset->tileHeight = tilesetNode.attribute("tileheight").as_int();
+        tileset->spacing = tilesetNode.attribute("spacing").as_int();
+        tileset->margin = tilesetNode.attribute("margin").as_int();
+        tileset->tilecount = tilesetNode.attribute("tilecount").as_int();
+        tileset->columns = tilesetNode.attribute("columns").as_int();
+        //Load Tileset image
+        SString textPath = path;
+        path += tilesetNode.child("image").attribute("source").as_string();
 
-      //Load Tileset attributes
+        tileset->texture = app->tex->Load(textPath.GetString());
+        //Load Tileset properties
+        mapData.tilesets.Add(tileset);
+     }
 
-      //Load Tileset image
+      
+
+      
    
     // L05: TODO 5: LOG all the data loaded iterate all tilesetsand LOG everything
     if(ret == true)
     {
         LOG("Successfully parsed map XML file :%s", "");
         LOG("width : %d height : %d",0,0);
-        LOG("tile_width : %d tile_height : %d",0,0);
+        LOG("tile_width : %d tile_height : %d",mapData.tileWidth,mapData.tileHeight);
         
         LOG("Tilesets----");
+
+        ListItem<TileSet*>* tileset = mapData.tilesets.start;
+        while(tileset != NULL){
+            //iterate the tilesets
+            LOG("name : %s firstgid : %d", tileset->data->name, tileset->data->firstgid);
+            LOG("tile width : %d tile height : %d", tileset->data->tileWidth, tileset->data->tileHeight);
+            LOG("spacing : %d margin : %d", tileset->data->spacing, tileset->data->margin);
+
+            tileset = tileset->next;
+
+        }
         
-        //iterate the tilesets
-            LOG("name : %s firstgid : %d","", 0);
-            LOG("tile width : %d tile height : %d", 0, 0);
-            LOG("spacing : %d margin : %d",0, 0);
+        
     }
-
+    
     if(mapFileXML) mapFileXML.reset();
-
+    else{
+        LOG("Could not load map xml file %s. pugi error: %s", mapFileName.GetString(), result.description());
+        ret = false;
+    }
+    }
     mapLoaded = ret;
 
     return ret;
